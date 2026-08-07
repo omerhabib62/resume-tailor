@@ -52,6 +52,10 @@ def tailor(job_post: str, company: str, role: str,
         p = prompt if attempt == 0 else (
             prompt + "\n\nYOUR PREVIOUS OUTPUT FAILED THESE CHECKS. FIX EXACTLY:\n" + report)
         output = llm_fn(p)
+        # LLMs sometimes return keyword_line as a comma-string instead of a list — normalize so the
+        # provenance gate checks real skill tokens (not characters) and the render joins words, not letters.
+        if isinstance(output.get("keyword_line"), str):
+            output["keyword_line"] = [s.strip() for s in output["keyword_line"].split(",") if s.strip()]
         res = run_all(output, master, None, REQUIRED_SECTIONS)   # G1 provenance, G2 placeholders, G3 sections
         if res["ok"]:
             break
@@ -63,7 +67,7 @@ def tailor(job_post: str, company: str, role: str,
     values = {
         "{{TITLE}}": str(output["title"]),
         "{{SUMMARY}}": str(output["summary"]),
-        "{{KEYWORD_LINE}}": " · ".join(output.get("keyword_line", [])),
+        "{{KEYWORD_LINE}}": " · ".join(str(x) for x in output.get("keyword_line", [])),
         "{{COMPANY}}": company,
     }
     doc = _fill_template(template, values)

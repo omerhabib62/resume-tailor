@@ -52,3 +52,22 @@ def test_tailor_rejects_fabrication():
     with pytest.raises(ValueError):                    # RT-TRUTH-001/002 gate must block it
         T.tailor("role", "TestCo", "Engineer",
                  master_path=MASTER, template="template.docx", llm_fn=_fabricated_llm)
+
+
+def _string_keyword_llm(prompt: str) -> dict:          # some LLMs return keyword_line as a comma-string
+    return {"title": "Backend Engineer",
+            "summary": "6+ years building production systems.",
+            "keyword_line": "Python, PostgreSQL, RAG",
+            "gaps": []}
+
+
+def test_keyword_line_string_is_normalized():
+    out = T.tailor("Backend role: Python", "TestCo2", "Backend Engineer",
+                   master_path=MASTER, template="template.docx", llm_fn=_string_keyword_llm)
+    try:
+        xml = zipfile.ZipFile(out).read("word/document.xml").decode("utf-8", "replace")
+        assert "Python · PostgreSQL · RAG" in xml       # words joined
+        assert "P · y · t" not in xml                   # NOT rendered character-by-character
+    finally:
+        if os.path.exists(out):
+            os.remove(out)
