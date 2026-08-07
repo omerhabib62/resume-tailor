@@ -67,6 +67,8 @@ not vibes.
 
 ## Run it
 
+> 📄 **For the full per-application workflow, see [guide.md](guide.md).**
+
 ```bash
 pip install -r requirements.txt          # langgraph, langchain-groq/-google-genai, python-docx-free (stdlib zip), pydantic, pyyaml
 cp master-profile.example.yaml master-profile.yaml   # then fill with YOUR real facts
