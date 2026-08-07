@@ -66,15 +66,41 @@ def _norm(s: str) -> str:
 
 
 # ---------- G1: provenance ----------
-def check_provenance(output: dict, master: dict) -> dict:
-    """Every surfaced skill must exist in the master vocab; every number must trace to a master number."""
-    issues = []
-    vocab = skill_vocab(master)
+_STOP = {"and", "or", "the", "a", "an", "of", "with", "for", "in", "to", "on", "using", "via",
+         "across", "both", "as", "at", "by", "is", "it", "that", "this", "your", "you"}
 
-    # skills in the keyword line must be real
+
+def master_text(master: dict) -> str:
+    """All truthful text in the master (skills + bullets + highlights + positioning), flattened + lowercased."""
+    parts: list[str] = []
+    def walk(x):
+        if isinstance(x, str):
+            parts.append(x)
+        elif isinstance(x, dict):
+            for v in x.values():
+                walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v)
+    walk(master)
+    return " ".join(parts).lower()
+
+
+def _skill_supported(skill: str, corpus: str) -> bool:
+    """Grounded if every significant word of the surfaced skill appears somewhere in the master corpus."""
+    words = [w for w in re.findall(r"[a-z0-9+#.]+", skill.lower()) if len(w) > 2 and w not in _STOP]
+    return all(w in corpus for w in words) if words else True
+
+
+def check_provenance(output: dict, master: dict) -> dict:
+    """Every surfaced skill must be grounded in the master; every number must trace to a master number."""
+    issues = []
+    corpus = master_text(master)
+
+    # skills in the keyword line must be grounded in the master (word-level, whole profile)
     for tok in output.get("keyword_line") or []:
-        if not _skill_known(tok, vocab):
-            issues.append(f"RT-TRUTH-001: surfaced skill not in master-profile: '{tok}'")
+        if not _skill_supported(str(tok), corpus):
+            issues.append(f"RT-TRUTH-001: surfaced skill not grounded in master-profile: '{tok}'")
 
     # numbers anywhere in title/summary/bullets must trace to a real master number
     known_nums = metric_numbers(master)

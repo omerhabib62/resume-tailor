@@ -94,3 +94,15 @@ def test_out_base_redirect(tmp_path):                  # can save outside the pr
     out = T.tailor("Backend: Python", "TmpCo", "Backend Engineer", master_path=MASTER,
                    template="template.docx", llm_fn=_truthful_llm, out_base=str(tmp_path))
     assert str(tmp_path) in out and os.path.exists(out)   # tmp_path auto-cleaned by pytest
+
+
+def test_provenance_grounds_on_whole_master():
+    from gates import check_provenance, load_master
+    m = load_master(MASTER)
+    base = {"title": "", "summary": "", "bullets": []}
+    # legit capability phrasing (grounded in bullets/highlights, not the skills list) must PASS:
+    ok = check_provenance({**base, "keyword_line": ["agentic workflows", "multi-agent systems"]}, m)
+    assert ok["ok"], ok["output"]
+    # genuine fabrication must still FAIL:
+    bad = check_provenance({**base, "keyword_line": ["Kubernetes", "Rust"]}, m)
+    assert not bad["ok"]
