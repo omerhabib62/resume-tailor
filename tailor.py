@@ -66,7 +66,7 @@ def _fill_template(template: str, values: dict[str, str]) -> bytes:
 
 def tailor(job_post: str, company: str, role: str,
            master_path: str = "master-profile.yaml", template: str = "template.docx",
-           llm_fn=_default_llm, max_fix: int = 2) -> str:
+           llm_fn=_default_llm, max_fix: int = 2, out_base: str = "applied") -> str:
     master = load_master(master_path)
     prompt = build_prompt(master, job_post)
 
@@ -98,8 +98,8 @@ def tailor(job_post: str, company: str, role: str,
     }
     doc = _fill_template(template, values)
 
-    # --- save under applied/<Company - Role>/ (RT-FILE-001), version-suffix if it exists ---
-    out_dir = os.path.join("applied", f"{company} - {role}")
+    # --- save under <out_base>/<Company - Role>/ (RT-FILE-001), version-suffix if it exists ---
+    out_dir = os.path.join(out_base, f"{company} - {role}")
     os.makedirs(out_dir, exist_ok=True)
     base = f"omer-habib-{company}-{role}".replace(" ", "-")
     out_path = os.path.join(out_dir, base + ".docx")

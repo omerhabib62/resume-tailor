@@ -8,8 +8,11 @@ Usage:
 
 Prints the output .docx path + the honest gaps to address in your cover note.
 """
-import sys
+import os, sys
+from dotenv import load_dotenv
 from tailor import tailor, LLMError
+
+load_dotenv()   # so OUTPUT_DIR / LLM_PROVIDER from .env are available
 
 
 def main():
@@ -27,9 +30,10 @@ def main():
         print(f"'{jd_file}' is empty — paste the job description into it first.")
         sys.exit(1)
 
-    print(f"Tailoring for {role} @ {company} …")
+    out_base = os.getenv("OUTPUT_DIR", "applied")   # set OUTPUT_DIR in .env to save elsewhere (e.g. your real applied folder)
+    print(f"Tailoring for {role} @ {company} …  (saving under: {out_base})")
     try:
-        path = tailor(job_post, company, role)
+        path = tailor(job_post, company, role, out_base=out_base)
     except LLMError as e:
         print(f"\n⚠️  {e}")
         sys.exit(3)

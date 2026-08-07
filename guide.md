@@ -14,6 +14,12 @@ The step-by-step workflow for using the tailor on a real job application.
   LLM_PROVIDER=gemini
   GEMINI_API_KEY=...
   ```
+- **Optional — save resumes elsewhere:** set `OUTPUT_DIR` in `.env` to write tailored files to your own
+  folder instead of the project's `applied/`. Example:
+  ```
+  OUTPUT_DIR=C:\Users\omerh\Documents\KSBL\semesters\2nd semester\other\applied
+  ```
+  Files land in `OUTPUT_DIR/<Company - Role>/`. Defaults to `applied/` if unset.
 
 ## For each job
 

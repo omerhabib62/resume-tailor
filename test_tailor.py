@@ -88,3 +88,9 @@ def test_keyword_line_string_is_normalized():
     finally:
         if os.path.exists(out):
             os.remove(out)
+
+
+def test_out_base_redirect(tmp_path):                  # can save outside the project root
+    out = T.tailor("Backend: Python", "TmpCo", "Backend Engineer", master_path=MASTER,
+                   template="template.docx", llm_fn=_truthful_llm, out_base=str(tmp_path))
+    assert str(tmp_path) in out and os.path.exists(out)   # tmp_path auto-cleaned by pytest
