@@ -11,3 +11,6 @@ applied/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# job-description scratch input
+jd.txt

@@ -93,6 +93,14 @@ def tailor(job_post: str, company: str, role: str,
     g2 = check_placeholders(final_text)
     if not g2["ok"]:
         raise ValueError(g2["output"])
+
+    # console feedback for real use: what got generated + honest gaps to handle in a cover note
+    print(f"  → title:    {output['title']}")
+    print(f"  → keywords: {values['{{KEYWORD_LINE}}']}")
+    if output.get("gaps"):
+        print("  → [GAPS] (kept OFF the resume — address these in a cover note / interview):")
+        for g in output["gaps"]:
+            print("      -", g)
     return out_path
 
 
