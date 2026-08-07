@@ -80,6 +80,8 @@ def tailor(job_post: str, company: str, role: str,
         # provenance gate checks real skill tokens (not characters) and the render joins words, not letters.
         if isinstance(output.get("keyword_line"), str):
             output["keyword_line"] = [s.strip() for s in output["keyword_line"].split(",") if s.strip()]
+        if isinstance(output.get("gaps"), str):                  # a single gap sentence -> one-item list
+            output["gaps"] = [output["gaps"].strip()] if output["gaps"].strip() else []
         res = run_all(output, master, None, REQUIRED_SECTIONS)   # G1 provenance, G2 placeholders, G3 sections
         if res["ok"]:
             break
