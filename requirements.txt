@@ -1,0 +1,11 @@
+langgraph
+langchain-core
+langchain-groq
+langchain-google-genai
+python-dotenv
+pydantic
+pyyaml
+pytest
+# optional providers:
+# langchain-anthropic
+# langchain-deepseek

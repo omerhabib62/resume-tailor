@@ -1,0 +1,70 @@
+# Deterministic content contract per built artifact — enforced with NO LLM.
+# Human-authored = ground truth. The execution gate greps each file; a missing must_contain
+# or a present must_not_contain FAILS the task deterministically, before the LLM reviewer runs.
+#
+# `guidance` is appended to the failure message so the ENGINEER can self-correct from the gate
+# alone (closes the loop without a human). Say HOW to satisfy the contract, not just what's missing.
+
+tailoring_prompt.py:
+  must_contain:
+    - "def build_prompt"
+    - "RT-TRUTH-001"
+    - "RT-TRUTH-002"
+    - "positioning"
+    - "experience"
+    - "metrics"
+    - "projects"
+    - "keyword_line"
+    - "summary"
+    - "gaps"
+    - "json"
+    - "return prompt"
+  must_not_contain:
+    - "TODO"
+    - "FIXME"
+    - "json.dumps"
+  guidance: >
+    build_prompt(master, job_post) must RETURN A PROMPT STRING (an f-string of instructions FOR an LLM).
+    It must NOT compute the tailoring itself in Python and must NOT use json.dumps — it does not produce
+    the title/summary/keyword_line/gaps, it produces the PROMPT that will ask the LLM to. Build one big
+    f-string: a "MASTER PROFILE FACTS" block interpolating master.get('positioning'),
+    master.get('experience'), master.get('metrics'), master.get('projects') AND master.get('skills');
+    a RULES list with one text line per RT id, including
+    "RT-TRUTH-002: Never invent or inflate metrics; include a number only if it appears in the master";
+    the job_post; and an instruction to reply ONLY with JSON {title, summary, keyword_line, gaps}
+    (use the literal word "json"). Assign it to a variable and end the function with `return prompt`.
+    Remove any Python logic that computes the answer, and remove dead if/else pass stubs.
+
+tailor.py:
+  must_contain:
+    - "def tailor"
+    - "build_prompt"
+    - "run_all"
+    - "template.docx"
+    - "{{TITLE}}"
+    - "{{SUMMARY}}"
+    - "{{KEYWORD_LINE}}"
+    - "{{COMPANY}}"
+    - "applied"
+  must_not_contain:
+    - "TODO"
+    - "FIXME"
+  guidance: >
+    tailor(job_post, company, role, master_path='master-profile.yaml', template='template.docx') must:
+    (1) load master via gates.load_master; (2) build the prompt with tailoring_prompt.build_prompt;
+    (3) call the LLM (harness.llm.make_llm) for JSON {title, summary, keyword_line, gaps};
+    (4) run gates.run_all and, on failure, re-prompt up to 2 times, else raise;
+    (5) byte-replace {{TITLE}}, {{SUMMARY}}, {{KEYWORD_LINE}}, {{COMPANY}} in a COPY of template.docx
+    (word/document.xml), preserving all else; (6) save to applied/<company> - <role>/omer-habib-...docx.
+
+test_tailor.py:
+  must_contain:
+    - "def test_"
+    - "RT-TRUTH-001"
+    - "build_prompt"
+    - "tailor"
+  must_not_contain: []
+  guidance: >
+    Write pytest functions (def test_*) using a MONKEYPATCHED llm (no live API): assert build_prompt's
+    output contains 'RT-TRUTH-001' and the job_post text; assert tailor(...) produces a valid docx with
+    no leftover {{...}}; assert a fabricated output (off-master skill) makes tailor raise / gate FAIL.

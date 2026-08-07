@@ -1,0 +1,13 @@
+# secrets — NEVER commit
+.env
+*.key
+
+# real personal data + generated resumes (keep private)
+master-profile.yaml
+template.docx
+applied/
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/

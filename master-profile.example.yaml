@@ -1,0 +1,59 @@
+# master-profile.example.yaml — SANITIZED SAMPLE (fictional person).
+# Copy to master-profile.yaml and fill with YOUR real facts. The tailorer may use ONLY what's here
+# (rule RT-TRUTH-001); the provenance gate rejects any output not traceable to this file.
+
+contact:
+  name: "Jane Doe"
+  email: "jane@example.com"
+  phone: "+00-000-0000000"
+  location: "Remote"
+  linkedin: "linkedin.com/in/example"
+  github: "github.com/example"
+  portfolio: "example.github.io"
+
+positioning:
+  years_experience: 6
+  primary_roles: ["Backend Engineer", "Full-Stack Engineer", "AI Engineer"]
+  one_liner: "6+ years shipping production backend and AI systems end to end."
+  domains_worked: ["fintech", "marketplace", "healthtech"]
+  strengths:
+    - "owns delivery end-to-end (requirements to support)"
+    - "detail-oriented and reliable in production"
+
+skills:                    # OPEN MAP — add any category keys; the gate flattens ALL values
+  languages: ["Python", "TypeScript", "SQL"]
+  backend: ["FastAPI", "Node.js", "REST APIs", "microservices"]
+  data: ["PostgreSQL", "Redis", "query optimization"]
+  ai_llm: ["LLMs (Claude, GPT, Gemini)", "RAG", "prompt engineering", "evaluation frameworks"]
+  infra_devops: ["Docker", "AWS", "GitHub Actions"]
+
+metrics: ["300+ automated tests", "10,000+ concurrent users"]
+
+experience:
+  - company: "Acme Corp"
+    role: "Software Engineer"
+    start: "2021-01"
+    end: "present"
+    location: "Remote"
+    bullets:
+      - "Built and operated a real-time API serving 10,000+ concurrent users."
+      - "Led migration to a typed backend, cutting post-deploy defects."
+
+projects:
+  - name: "Sample Project"
+    tech: ["Python", "PostgreSQL"]
+    highlights: ["Did a notable thing.", "Did another notable thing."]
+    impact: "Sole engineer."
+    case_study: ""
+    link: ""
+
+education:
+  - degree: "BSc Computer Science"
+    institution: "Example University"
+    start: ""
+    end: "2020"
+    note: ""
+
+certifications: []
+
+learning: ["some-tool-i-am-picking-up"]
