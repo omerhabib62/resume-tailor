@@ -40,6 +40,11 @@ def build_prompt(master: Dict, job_post: str) -> str:
     {job_post}
 
     INSTRUCTIONS FOR LLM:
-    Please reply ONLY with json {{title, summary, keyword_line, gaps}} including the word 'json'.
+    Reply ONLY with a json object of this exact shape (include the word 'json'):
+      "title": a short role title, 2-5 words, mirroring the job post's role if it is truthful for this candidate.
+      "summary": a 3-4 sentence professional summary using ONLY master facts.
+      "keyword_line": a list of SHORT skill terms, 1-3 words each, e.g. ["Python", "RAG", "Multi-Agent Systems", "PostgreSQL", "LLM Evaluation"]. NOT sentences, NOT descriptions, NOT punctuation-heavy phrases.
+      "gaps": a list of short strings, each a single job requirement the candidate lacks (or []).
+    Shape: {{title, summary, keyword_line, gaps}}
     """
     return prompt
