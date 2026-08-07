@@ -12,6 +12,19 @@ from gates import load_master, run_all, check_docx_valid, check_placeholders, RE
 from tailoring_prompt import build_prompt
 
 
+class LLMError(RuntimeError):
+    """Clean, user-facing error for LLM provider failures (quota / rate-limit / bad response)."""
+
+
+_RATE_MARKERS = ("429", "resource_exhausted", "rate_limit", "rate limit", "quota",
+                 "insufficient_quota", "too many requests", "tokens per day", "requests per day")
+
+
+def _is_rate_limit(msg: str) -> bool:
+    m = (msg or "").lower()
+    return any(k in m for k in _RATE_MARKERS)
+
+
 def _xml_escape(s: str) -> str:
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -19,12 +32,23 @@ def _xml_escape(s: str) -> str:
 def _default_llm(prompt: str) -> dict:
     """Call the configured harness provider (Groq/Gemini/Anthropic/DeepSeek) and parse its JSON reply."""
     from harness.llm import make_llm
-    raw = make_llm().invoke(prompt).content
+    provider = os.getenv("LLM_PROVIDER") or "gemini"
+    try:
+        raw = make_llm().invoke(prompt).content
+    except Exception as e:                                   # provider raised (quota, network, auth, ...)
+        if _is_rate_limit(str(e)):
+            raise LLMError(
+                f"Provider '{provider}' is rate/quota-limited right now "
+                f"(free tiers: Gemini ~20 req/day, Groq ~100k tok/day). "
+                f"Switch LLM_PROVIDER in .env (groq | gemini | anthropic | deepseek) and retry, "
+                f"or wait for the daily reset."
+            ) from None
+        raise LLMError(f"Provider '{provider}' call failed: {str(e)[:300]}") from None
     if isinstance(raw, list):  # some providers return content blocks
         raw = "".join(p.get("text", "") if isinstance(p, dict) else str(p) for p in raw)
     m = re.search(r"\{.*\}", raw, re.S)
     if not m:
-        raise ValueError(f"LLM did not return JSON:\n{raw[:500]}")
+        raise LLMError(f"Provider '{provider}' did not return JSON:\n{raw[:400]}")
     return json.loads(m.group(0))
 
 

@@ -9,7 +9,7 @@ Usage:
 Prints the output .docx path + the honest gaps to address in your cover note.
 """
 import sys
-from tailor import tailor
+from tailor import tailor, LLMError
 
 
 def main():
@@ -30,6 +30,9 @@ def main():
     print(f"Tailoring for {role} @ {company} …")
     try:
         path = tailor(job_post, company, role)
+    except LLMError as e:
+        print(f"\n⚠️  {e}")
+        sys.exit(3)
     except ValueError as e:
         print("\n❌ Gate blocked the output (this is the truth-guard working):\n", e)
         print("\nTip: if the LLM keeps tripping the provenance gate, switch LLM_PROVIDER=gemini in .env and retry.")

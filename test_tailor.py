@@ -54,6 +54,23 @@ def test_tailor_rejects_fabrication():
                  master_path=MASTER, template="template.docx", llm_fn=_fabricated_llm)
 
 
+def test_rate_limit_detection():
+    from tailor import _is_rate_limit
+    assert _is_rate_limit("429 RESOURCE_EXHAUSTED: quota exceeded")
+    assert _is_rate_limit("Rate limit reached ... tokens per day (TPD): Limit 100000")
+    assert not _is_rate_limit("some unrelated json parse error")
+
+
+def test_quota_error_is_clean(monkeypatch):            # a 429 must surface as a clean LLMError, not a traceback
+    class _Boom:
+        def invoke(self, prompt):
+            raise RuntimeError("429 RESOURCE_EXHAUSTED: quota exceeded, tokens per day")
+    monkeypatch.setattr("harness.llm.make_llm", lambda *a, **k: _Boom())
+    with pytest.raises(T.LLMError) as ei:
+        T._default_llm("hi")
+    assert "rate/quota" in str(ei.value).lower()
+
+
 def _string_keyword_llm(prompt: str) -> dict:          # some LLMs return keyword_line as a comma-string
     return {"title": "Backend Engineer",
             "summary": "6+ years building production systems.",
